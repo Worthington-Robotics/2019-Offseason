@@ -182,38 +182,57 @@ public class Drive extends Subsystem {
         periodic.gyro_heading = heading;
     }
 
-    public double getLeftEncoderRotations() {
+    /**
+     * returns left drive encoder clicks
+     */
+     public double getLeftEncoderRotations() {
         return periodic.left_pos_ticks / Constants.DRIVE_ENCODER_PPR;
     }
-
+    /**
+     * returns right drive encoder clicks
+     */
     public double getRightEncoderRotations() {
         return periodic.right_pos_ticks / Constants.DRIVE_ENCODER_PPR;
     }
-
+    /**
+     * returns left encoder distance
+     */
     public double getLeftEncoderDistance() {
         return rotationsToInches(getLeftEncoderRotations());
     }
-
+    /**
+     * returns right encoder distance
+     */
     public double getRightEncoderDistance() {
         return rotationsToInches(getRightEncoderRotations());
     }
-
+    /**
+     * gets left velocity in native units and turns it into ticks
+     */
     public double getLeftVelocityNativeUnits() {
         return periodic.left_velocity_ticks_per_100ms;
     }
-
+    /**
+     * gets right velocity in native units and turns it into ticks
+     */
     public double getRightVelocityNativeUnits() {
         return periodic.right_velocity_ticks_per_100ms;
     }
-
+    /**
+     * gets left velocity and turns it into rotations to inches
+     */
     public double getLeftLinearVelocity() {
         return rotationsToInches(getLeftVelocityNativeUnits() * 10.0 / Constants.DRIVE_ENCODER_PPR);
     }
-
+    /**
+     * gets right velocity and turns it into rotations to inches
+     */
     public double getRightLinearVelocity() {
         return rotationsToInches(getRightVelocityNativeUnits() * 10.0 / Constants.DRIVE_ENCODER_PPR);
     }
-
+    /**
+     * Resets a bunch of things
+     */
     public void reset() {
         mOverrideTrajectory = false;
         mMotionPlanner.reset();
