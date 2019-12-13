@@ -21,6 +21,7 @@ public class DriveSignal {
     public static final DriveSignal NEUTRAL = new DriveSignal(0, 0);
     public static final DriveSignal BRAKE = new DriveSignal(0, 0, true);
 
+    //getters
     public double getLeft() {
         return mLeftMotor;
     }
@@ -31,6 +32,13 @@ public class DriveSignal {
 
     public boolean getBrakeMode() {
         return mBrakeMode;
+    }
+
+    //manipulation functions
+    public DriveSignal invert(){
+        mLeftMotor *= -1;
+        mRightMotor *= -1;
+        return this;
     }
 
     @Override

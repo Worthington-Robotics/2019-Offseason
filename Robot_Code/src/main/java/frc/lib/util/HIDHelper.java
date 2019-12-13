@@ -27,9 +27,9 @@ public class HIDHelper{
             return 0;
         } else {
             if (stickInpt < 0) {
-                return (0 - Math.pow(stickInpt, pow));
+                return -Math.abs(Math.pow(stickInpt, pow));
             } else {
-                return Math.pow(stickInpt, pow);
+                return Math.abs(Math.pow(stickInpt, pow));
             }
         }
     }

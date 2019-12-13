@@ -1,12 +1,10 @@
 package frc.lib.physics;
 
-import frc.lib.geometry.Pose2d;
+import java.text.DecimalFormat;
+
 import frc.lib.geometry.Rotation2d;
 import frc.lib.geometry.Translation2d;
 import frc.lib.util.CSVWritable;
-import frc.robot.Constants;
-
-import java.text.DecimalFormat;
 
 public class ArmModel {
 
@@ -14,38 +12,47 @@ public class ArmModel {
     protected final double prox_moi_;
     protected final double dist_moi_;
 
-    // Equivalent mass of segment, in kg.
-
+    // Equivalent length of each segment, in m
+    protected final double prox_len_;
+    protected final double dist_len_;
 
     // Transmissions for both joints of the arm.
     protected final DCMotorTransmission prox_transmission_;
     protected final DCMotorTransmission dist_transmission_;
 
+    /*TODO Nuke most of this code and solve using linear algerbra and a small bit of trig
+    should be able to apply rotation 2d's to do some of the heavy basis shifting
+    most of this has to do with the inverse kinematics
+    the forward kinematics should be okay*/
 
-    public ArmModel(double prox_moi, double dist_moi, DCMotorTransmission prox_transmission, DCMotorTransmission dist_transmission) {
+
+    public ArmModel(double prox_len, double dist_len, double prox_moi, double dist_moi, DCMotorTransmission prox_transmission, DCMotorTransmission dist_transmission) {
+        this.prox_len_ = prox_len;
+        this.dist_len_ = dist_len;
         this.prox_moi_ = prox_moi;
         this.dist_moi_ = dist_moi;
         this.prox_transmission_ = prox_transmission;
         this.dist_transmission_ = dist_transmission;
     }
 
-    //TODO implement actual model
-
     /**
-     * Generates an X Y coordinate for the end effector based on two angles
-     * <p>Can be angular position, velocity or acceleration
+     * Generates an X Y coordinate for the end effector based on two angles.
+     * Can be angular position, velocity or acceleration. Uses a vector based
+     * representation for calculation. NOTE: domains are reversed though due to having 
+     * 0 degrees as vertical
      *
-     * @param prox
-     * @param dist
-     * @return double array of length 2 {x, y}
+     * @param prox angle of the proximal joint
+     * @param dist angle of the distal joint
+     * @return translation 2d containing end effector position
      */
-    public static Translation2d solveForwardKinematics(Rotation2d prox, Rotation2d dist) {
-        double x = (prox.sin() * Constants.PROX_LENGTH) + (dist.sin() * Constants.DIST_LENGTH); // Domains are reversed due to 0 being perfectly vertical
-        double y = (prox.sin() * Constants.PROX_LENGTH) + (dist.cos() * Constants.DIST_LENGTH);
+    public Translation2d solveForwardKinematics(Rotation2d prox, Rotation2d dist) {
+        double x = (prox.sin() * prox_len_) + (dist.sin() * dist_len_); // Domains are reversed due to 0 being perfectly vertical
+        double y = (prox.sin() * prox_len_) + (dist.cos() * dist_len_);
         return new Translation2d(x, y);
     }
 
 
+    //TODO nuke this
     /**
      * Generates a set of angles for an xy coordinate
      * <p>Can be position, velocity or acceleration
@@ -54,64 +61,54 @@ public class ArmModel {
      * @param y Y coordinate in m
      * @return a position based arm state
      */
-    public static ArmState solveInverseKinematics(double x, double y) {
-        //TODO determine if domain shift is necessary here
+    public ArmState solveInverseKinematics(double x, double y) {
+        //find rotation offset into new basis
+        //calculate the distance between (0,0) and (x,y)
+        //solve for distal angle with distance
+        //solve for proximal angle with distance
+        //add accumulate rotation offset into proximal angle to get the actual angle
         double distTheta = Math.acos((x * x + y * y
-                - Constants.PROX_LENGTH * Constants.PROX_LENGTH - Constants.DIST_LENGTH * Constants.DIST_LENGTH) / (2 * Constants.DIST_LENGTH * Constants.PROX_LENGTH));
-        double proxTheta = Math.atan2(y, x) - Math.atan2(Constants.DIST_LENGTH * Math.sin(distTheta),
-                Constants.PROX_LENGTH + Constants.DIST_LENGTH * Math.cos(distTheta));
+                - prox_len_ * prox_len_ - dist_len_ * dist_len_) / (2 * dist_len_ * prox_len_));
+        double proxTheta = Math.atan2(y, x) - Math.atan2(dist_len_ * Math.sin(distTheta),
+                prox_len_ + dist_len_ * Math.cos(distTheta));
         distTheta += proxTheta;
         return new ArmState(proxTheta, distTheta);
     }
 
+    /**
+     * function to determine if the arm state falls in a possible
+     * state of interference with itself or known geometry.
+     * @return
+     */
+    public boolean checkForInterference(){
+        //TODO implement this
+        return false;
+    }
+
     public ArmDynamics solveForwardDynamics(ArmState angularPosition, ArmState Voltage, ArmState AngularVelocity) {
-        double proxGravityTorque = 9.81 * Math.sin(angularPosition.get(true)) * Constants.PROX_LENGTH * prox_moi_;
-        double distGravityTorque = 9.81 * Math.sin(angularPosition.get(false)) * Constants.DIST_LENGTH * dist_moi_;
         ArmDynamics output = new ArmDynamics();
-        output.angular_velocity = AngularVelocity;
-        output.voltage = Voltage;
-        double proxTorque = prox_transmission_.getTorqueForVoltage(AngularVelocity.get(true), Voltage.get(true)) - proxGravityTorque;
-        double distTorque = dist_transmission_.getTorqueForVoltage(AngularVelocity.get(false), Voltage.get(false)) - distGravityTorque;
-        ArmState Torque = new ArmState();
-        Torque.set(true, proxTorque);
-        Torque.set(false, distTorque);
-        output.torque = Torque;
-        double proxAngularAcceleration = proxTorque / prox_moi_;
-        double distAngularAcceleration = distTorque / dist_moi_;
-        ArmState AngularAcceleration = new ArmState();
-        AngularAcceleration.set(true, proxAngularAcceleration);
-        AngularAcceleration.set(false, distAngularAcceleration);
-        output.angular_acceleration = AngularAcceleration;
+        //TODO manipulate output
         return output;
     }
 
     public ArmDynamics solveInverseDynamics(ArmState angularPosition, ArmState angularVelocity, ArmState angularAcceleration) {
-        double proxGravityTorque = 9.81 * Math.sin(angularPosition.get(true)) * Constants.PROX_LENGTH * prox_moi_;
-        double distGravityTorque = 9.81 * Math.sin(angularPosition.get(false)) * Constants.DIST_LENGTH * dist_moi_;
         ArmDynamics output = new ArmDynamics();
-        output.angular_acceleration = angularAcceleration;
-        output.angular_velocity = angularVelocity;
-        double proxTorque = angularAcceleration.get(true) * prox_moi_ - proxGravityTorque;
-        double distTorque = angularAcceleration.get(false) * dist_moi_ - distGravityTorque;
-        ArmState Torque = new ArmState();
-        Torque.set(true, proxTorque);
-        Torque.set(false, distTorque);
-        output.torque = Torque;
-        double proxVoltage = prox_transmission_.getVoltageForTorque(angularVelocity.get(true), Torque.get(true));
-        double distVoltage = dist_transmission_.getVoltageForTorque(angularVelocity.get(false), Torque.get(false));
-        ArmState Voltage = new ArmState();
-        Voltage.set(true, proxVoltage);
-        Voltage.set(false, distVoltage);
-        output.voltage = Voltage;
+        //TODO manipulate output
         return output;
 
     }
 
-    // Can refer to velocity, acceleration, torque, voltage, etc., depending on context.
+    // Can refer to position, velocity, acceleration, torque, voltage, etc., depending on context.
     public static class ArmState {
         public double prox = 0.0;
         public double dist = 0.0;
 
+        /**
+         * The current state of a 2 axis arm. 
+         * This can represent position, velocity, torque, voltage, etc depending on context
+         * @param proximal value
+         * @param distal value 
+         */
         public ArmState(double prox, double dist) {
             this.prox = prox;
             this.dist = dist;
@@ -120,16 +117,20 @@ public class ArmModel {
         public ArmState() {
         }
 
-        public double get(boolean get_prox) {
-            return get_prox ? prox : dist;
+        public double getProximal() {
+            return prox;
         }
 
-        public void set(boolean set_prox, double val) {
-            if (set_prox) {
-                prox = val;
-            } else {
-                dist = val;
-            }
+        public double getDistal(){
+            return dist;
+        }
+
+        public void setProximal(double val) {
+            prox = val;
+        }
+
+        public void setDistal(double val){
+            dist = val;
         }
 
         @Override
@@ -145,6 +146,7 @@ public class ArmModel {
 
     //full state dynamics of a 2 axis arm
     public static class ArmDynamics implements CSVWritable {
+        public ArmState angular_position = new ArmState(); // rad
         public ArmState angular_velocity = new ArmState(); // rad/s
         public ArmState angular_acceleration = new ArmState(); // rad/s^2
         public ArmState voltage = new ArmState(); // V
