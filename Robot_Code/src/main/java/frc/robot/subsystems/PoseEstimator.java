@@ -7,8 +7,8 @@ import frc.lib.geometry.Rotation2d;
 import frc.lib.geometry.Twist2d;
 import frc.lib.loops.ILooper;
 import frc.lib.loops.Loop;
-import frc.lib.util.InterpolatingDouble;
-import frc.lib.util.InterpolatingTreeMap;
+import frc.lib.math.InterpolatingDouble;
+import frc.lib.math.InterpolatingTreeMap;
 import frc.robot.Kinematics;
 
 import java.util.Map;
@@ -18,35 +18,31 @@ public class PoseEstimator extends Subsystem {
 
     private static PoseEstimator m_instance = new PoseEstimator();
 
-    private static final int observation_buffer_size_ = 10;
+    private static final int observation_buffer_size_ = 100;
 
-    private InterpolatingTreeMap<InterpolatingDouble, Pose2d> field_to_vehicle_;
-    private double left_encoder_prev_distance_ = 0.0;
-    private double right_encoder_prev_distance_ = 0.0;
-    private double distance_driven_ = 0.0;
-    //private PeriodicIO periodic;
+    private PoseIO periodicIO;
 
-    private Loop mLoop = new Loop() {
+    private Loop mLoop = new Loop(){
 
         @Override
         public void onStart(double timestamp) {
-            distance_driven_ = 0.0;
-            left_encoder_prev_distance_ = Drive.getInstance().getLeftEncoderDistance();
-            right_encoder_prev_distance_ = Drive.getInstance().getRightEncoderDistance();
+            periodicIO.distance_driven_= 0.0;
+            periodicIO.left_encoder_prev_distance_ = Drive.getInstance().getLeftEncoderDistance();
+            periodicIO.right_encoder_prev_distance_ = Drive.getInstance().getRightEncoderDistance();
         }
 
         @Override
         public void onLoop(double timestamp) {
-            synchronized (this) {
+            synchronized (this){
                 final Rotation2d gyro_angle = Drive.getInstance().getHeading();
                 final double left_distance = Drive.getInstance().getLeftEncoderDistance();
                 final double right_distance = Drive.getInstance().getRightEncoderDistance();
-                final double delta_left = left_distance - left_encoder_prev_distance_;
-                final double delta_right = right_distance - right_encoder_prev_distance_;
+                final double delta_left = left_distance - periodicIO.left_encoder_prev_distance_;
+                final double delta_right = right_distance - periodicIO.right_encoder_prev_distance_;
                 final Twist2d odometry_velocity = generateOdometryFromSensors(delta_left, delta_right, gyro_angle);
                 addObservations(timestamp, Kinematics.integrateForwardKinematics(getLatestFieldToVehicle().getValue(), odometry_velocity));
-                left_encoder_prev_distance_ = left_distance;
-                right_encoder_prev_distance_ = right_distance;
+                periodicIO.left_encoder_prev_distance_ = left_distance;
+                periodicIO.right_encoder_prev_distance_ = right_distance;
                 outputTelemetry();
             }
         }
@@ -57,27 +53,27 @@ public class PoseEstimator extends Subsystem {
         }
     };
 
-    public static PoseEstimator getInstance() {
+    public static PoseEstimator getInstance(){
         return m_instance;
     }
 
-    private PoseEstimator() {
+    private PoseEstimator(){
         reset(0, Pose2d.identity());
-        //periodic = new PeriodicIO();
     }
 
-    public synchronized void reset(double start_time, Pose2d initial_field_to_vehicle) {
-        field_to_vehicle_ = new InterpolatingTreeMap<>(observation_buffer_size_);
-        field_to_vehicle_.put(new InterpolatingDouble(start_time), initial_field_to_vehicle);
-        distance_driven_ = 0.0;
+    public void reset(double start_time, Pose2d initial_field_to_vehicle){
+        periodicIO = new PoseIO();
+        periodicIO.field_to_vehicle_ = new InterpolatingTreeMap<>(observation_buffer_size_);
+        periodicIO.field_to_vehicle_.put(new InterpolatingDouble(start_time), initial_field_to_vehicle);
+        periodicIO.distance_driven_ = 0.0;
     }
 
     public synchronized Map.Entry<InterpolatingDouble, Pose2d> getLatestFieldToVehicle() {
-        return field_to_vehicle_.lastEntry();
+        return periodicIO.field_to_vehicle_.lastEntry();
     }
 
     public synchronized Pose2d getFieldToVehicle(double timestamp) {
-        return field_to_vehicle_.getInterpolated(new InterpolatingDouble(timestamp));
+        return periodicIO.field_to_vehicle_.getInterpolated(new InterpolatingDouble(timestamp));
     }
 
     public synchronized Twist2d generateOdometryFromSensors(double left_encoder_delta_distance, double
@@ -86,23 +82,34 @@ public class PoseEstimator extends Subsystem {
         final Twist2d delta = Kinematics.forwardKinematics(last_measurement.getRotation(),
                 left_encoder_delta_distance, right_encoder_delta_distance,
                 current_gyro_angle);
-        distance_driven_ += delta.dx; //do we care about dy here?
+        periodicIO.distance_driven_ += delta.dx; 
         return delta;
     }
 
     public synchronized void addObservations(double timestamp, Pose2d observation) {
-        field_to_vehicle_.put(new InterpolatingDouble(timestamp), observation);
+        periodicIO.field_to_vehicle_.put(new InterpolatingDouble(timestamp), observation);
     }
 
-    public double getDistanceDriven() {
-        return distance_driven_;
+    public double getDistanceDriven(){
+        return periodicIO.distance_driven_;
+    }
+
+    @Override
+    public void readPeriodicInputs() {
+
+    }
+
+    @Override
+    public void writePeriodicOutputs() {
+
     }
 
     @Override
     public void outputTelemetry() {
-        SmartDashboard.putNumber("Drive/Pose/X", getLatestFieldToVehicle().getValue().getTranslation().x());
-        SmartDashboard.putNumber("Drive/Pose/Y", getLatestFieldToVehicle().getValue().getTranslation().y());
-        SmartDashboard.putNumber("Drive/Pose/Theta", (getLatestFieldToVehicle().getValue().getRotation().getDegrees() + 360) % 360);
+        periodicIO.current = getLatestFieldToVehicle().getValue();
+        SmartDashboard.putNumber("Drive/Pose/X", periodicIO.current.getTranslation().x());
+        SmartDashboard.putNumber("Drive/Pose/Y", periodicIO.current.getTranslation().y());
+        SmartDashboard.putNumber("Drive/Pose/Theta", (periodicIO.current.getRotation().getDegrees()+360)%360);
     }
 
     @Override
@@ -110,25 +117,23 @@ public class PoseEstimator extends Subsystem {
         reset(Timer.getFPGATimestamp(), Pose2d.identity());
     }
 
-    /*public double getPoseX(){
-        return periodic.odometry.getTranslation().x();
-    }
-    public double getPoseY()
-    {
-        return periodic.odometry.getTranslation().y();
-    }
-    public double getPoseTheta()
-    {
-        return periodic.odometry.getRotation().getDegrees();
-    }
-*/
     @Override
-    public void registerEnabledLoops(ILooper looper) {
+    public void registerEnabledLoops(ILooper looper){
         looper.register(mLoop);
     }
-  /*
-    public static class PeriodicIO
-    {
-        Pose2d odometry;
-    }*/
+
+    public class PoseIO extends PeriodicIO{
+        public Pose2d current;
+        public InterpolatingTreeMap<InterpolatingDouble, Pose2d> field_to_vehicle_;
+        public double distance_driven_= 0.0;
+        public double left_encoder_prev_distance_ = 0.0;
+        public double right_encoder_prev_distance_ = 0.0;
+
+    }
+
+    @Override
+    public void onStop() {
+        // No-op
+    }
+
 }
