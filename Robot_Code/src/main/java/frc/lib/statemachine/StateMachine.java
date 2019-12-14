@@ -12,13 +12,15 @@ public class StateMachine {
     private static final AtomicInteger state = new AtomicInteger(-1);
     private static final AtomicBoolean wantStop = new AtomicBoolean(true);
     private static final AtomicBoolean stateLock = new AtomicBoolean(false);
-    private volatile static ConcurrentLinkedQueue<ActionGroup> queuedStates;
+    private volatile static StateMachineDescriptor descriptor;
     private volatile static ActionGroup currentState;
     private volatile static double t_start;
     private static final double delay = 0.020;
 
     private static final Runnable Man = () -> {
         try {
+            descriptor.onStart();
+            ConcurrentLinkedQueue<ActionGroup> queuedStates = descriptor.getStates();
             state.set(0);
             SmartDashboard.putNumber("StateMachine/state", state.get());
             if (queuedStates == null) {
@@ -39,32 +41,45 @@ public class StateMachine {
                     state.getAndAdd(1);
                 }
             }
-            stateLock.set(false);
+            state.set(-1);
         }catch (Exception e){
             System.out.println(e.getMessage());
             state.set(-3);
+        } finally{
             SmartDashboard.putNumber("StateMachine/state", state.get());
             stateLock.set(false);
+            wantStop.set(true);
+            descriptor.onStop();
         }
     };
 
-    public static boolean runMachine(StateMachineDescriptor descriptor) {
-        SmartDashboard.putNumber("StateMachine/state", -1);
+    /**
+     * starts the state machine (if not already runnning a descriptor)
+     * @param descrip the descriptor to run in the machine
+     * @return true if the machine was started successfully
+     */
+    public static boolean runMachine(StateMachineDescriptor descrip) {
         if(stateLock.get()) return false;
         stateLock.set(true);
         wantStop.set(false);
-        queuedStates = descriptor.getStates();
+        descriptor = descrip;
         Thread thread = new Thread(Man);
         thread.start();
         return true;
     }
 
+    /**
+     * gets the current status of the state machine
+     * @return true if the machine is currently running
+     */
     public static boolean isRunning(){
         return stateLock.get();
     }
 
+    /**
+     * forces the state machine to stop and exit within the next iteration.
+     */
     public static void assertStop(){
-        SmartDashboard.putNumber("StateMachine/state", -1);
         if(!wantStop.get()){
             wantStop.set(true);
             System.out.println("State Machine Halting");
