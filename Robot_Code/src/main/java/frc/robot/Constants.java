@@ -57,6 +57,7 @@ public class Constants {
     public static final double ANGLE_KP = 0.04; // 0.065;
     public static final double ANGLE_KI = 0; // 0.00125;
     public static final double ANGLE_KD = 0; // 0.1
+    public static final double ANGLE_PID_EPISLON = 1;
 
     public static final double DRIVE_RIGHT_KP = 1.2;
     public static final double DRIVE_RIGHT_KI = 0.0;

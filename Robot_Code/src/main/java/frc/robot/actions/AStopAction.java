@@ -2,7 +2,6 @@ package frc.robot.actions;
 
 import frc.lib.statemachine.Action;
 import frc.lib.statemachine.StateMachine;
-import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Drive;
 
 public class AStopAction extends Action {
@@ -12,7 +11,6 @@ public class AStopAction extends Action {
     public void onStart() {
         StateMachine.assertStop();
         Drive.getInstance().overrideTrajectory(true);
-        Arm.getInstance().setVelocitymConfig();
 //        Manipulator.getInstance().setElevatorPower(0);
         finished = true;
     }

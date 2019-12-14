@@ -1,10 +1,8 @@
 package frc.robot.actions.driveactions;
 
-import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.statemachine.Action;
 import frc.lib.util.DriveSignal;
-import frc.robot.Constants;
 import frc.robot.subsystems.Drive;
 
 public class AnglePID extends Action {
@@ -34,8 +32,8 @@ public class AnglePID extends Action {
 
     @Override
     public boolean isFinished() {
-            SmartDashboard.putBoolean("vision/On Target", angleController.onTarget());
-            return angleController.onTarget();
+            SmartDashboard.putBoolean("vision/On Target", Drive.getInstance().getPIDOnTarget());
+            return Drive.getInstance().getPIDOnTarget();
     }
 
     @Override

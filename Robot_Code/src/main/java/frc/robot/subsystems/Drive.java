@@ -65,7 +65,6 @@ public class Drive extends Subsystem {
                 if (Constants.ENABLE_MP_TEST_MODE && DriverStation.getInstance().isTest()) {
                     mDriveControlState = DriveControlState.PROFILING_TEST;
                 }
-
                 switch (mDriveControlState) {
                 case PATH_FOLLOWING:
                     updatePathFollower();
@@ -81,15 +80,13 @@ public class Drive extends Subsystem {
                         periodic.right_demand = radiansPerSecondToTicksPer100ms(
                                 inchesPerSecondToRadiansPerSecond(Constants.MP_TEST_SPEED));
                     }
-
                     break;
                 case OPEN_LOOP:
                     setOpenLoop(arcadeDrive(periodic.operatorInput[1], periodic.operatorInput[2]));
                     break;
                 case ANGLE_PID:
-                    periodic.operatorInput = HIDHelper.getAdjStick(Constants.MASTER_STICK);
-                    periodic.operatorInput[2] = (periodic.gyro_heading.getDegrees() - periodic.gyro_pid_angle) / 720;
-                    setOpenLoop(arcadeDrive(periodic.operatorInput[1], periodic.operatorInput[2]));
+                    double PIDOutput = anglePID.update(periodic.gyro_heading.getDegrees());
+                    setOpenLoop(arcadeDrive(periodic.operatorInput[1], PIDOutput));
                     break;
                 default:
                     System.out.println("You fool, unexpected control state");
@@ -351,7 +348,7 @@ public class Drive extends Subsystem {
     }
 
     /**
-     * Configure talons for Angle PID control
+     * Configure for Angle PID control
      */
     public synchronized void setAnglePidLoop(DriveSignal signal, double angle) {
         if (mDriveControlState != DriveControlState.ANGLE_PID) {
@@ -363,6 +360,11 @@ public class Drive extends Subsystem {
         anglePID.setPoint(angle);
         periodic.left_demand = signal.getLeft();
         periodic.right_demand = signal.getRight();
+    }
+
+    public boolean getPIDOnTarget()
+    {
+        return anglePID.onTarget(Constants.ANGLE_PID_EPISLON);
     }
 
     /**
@@ -380,10 +382,6 @@ public class Drive extends Subsystem {
         periodic.left_feedforward = feedforward.getLeft();
         periodic.right_feedforward = feedforward.getRight();
 
-    }
-
-    public void setMotorPower(double MP) {
-        periodic.climber_power = MP;
     }
 
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {

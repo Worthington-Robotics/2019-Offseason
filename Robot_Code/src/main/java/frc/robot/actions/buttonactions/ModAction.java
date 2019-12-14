@@ -1,24 +1,25 @@
 package frc.robot.actions.buttonactions;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import frc.lib.statemachine.Action;
 
 public class ModAction extends Action {
 
     Action main, function;
-    boolean sideShift;
+    JoystickButton button;
+    boolean isMod;
 
     public ModAction(Action main, Action function, JoystickButton button) {
         this.main = main;
         this.function = function;
+        this.button = button;
     }
 
     @Override
     public void onStart() {
+        isMod = button.get();
         System.out.println("Activated");
-        sideShift = Arm.getInstance().getSideShift();
-        if (!sideShift) {
+        if (!isMod) {
             System.out.println("Normal");
             main.onStart();
         } else {
@@ -29,7 +30,7 @@ public class ModAction extends Action {
 
     @Override
     public void onLoop() {
-        if (!sideShift) {
+        if (!isMod) {
             main.onLoop();
         } else {
             function.onLoop();
@@ -38,7 +39,7 @@ public class ModAction extends Action {
 
     @Override
     public boolean isFinished() {
-        if (!sideShift) {
+        if (!isMod) {
             return main.isFinished();
         } else {
             return function.isFinished();
@@ -47,7 +48,7 @@ public class ModAction extends Action {
 
     @Override
     public void onStop() {
-        if (!sideShift) {
+        if (!isMod) {
             main.onStop();
         } else {
             function.onStop();

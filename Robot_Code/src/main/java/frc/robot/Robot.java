@@ -16,7 +16,7 @@ import frc.lib.statemachine.StateMachineDescriptor;
 import frc.lib.util.DriveSignal;
 import frc.lib.util.VersionData;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.Vision;
 
 import java.util.Arrays;
 
