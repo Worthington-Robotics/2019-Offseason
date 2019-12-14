@@ -4,10 +4,8 @@ import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import frc.lib.statemachine.Action;
 import frc.robot.actions.*;
-import frc.robot.actions.armactions.*;
 import frc.robot.actions.driveactions.AnglePID;
 import frc.robot.actions.driveactions.GyroLock;
-import frc.robot.autoactiongroups.StowProtocol;
 
 public class OI {
 
@@ -57,29 +55,11 @@ public class OI {
         ////////////Actions Tied To Buttons////////////
         //Safety Routines
         autoStopButton.whenPressed(Action.toCommand(new AStopAction()));
-        ArmProx.whenPressed(Action.toCommand(new ProxToggle()));
         //Climb Stuff
         /*bothClimb.whenPressed(Action.toCommand(new ModAction(new ClimbAction(DoubleSolenoid.Value.kForward, DoubleSolenoid.Value.kForward), new ClimbAction(DoubleSolenoid.Value.kReverse, DoubleSolenoid.Value.kReverse))));
         frontClimb.whenPressed(Action.toCommand(new ModAction(new ClimbAction(true, DoubleSolenoid.Value.kForward), new ClimbAction(true, DoubleSolenoid.Value.kReverse))));
         backClimb.whenPressed(Action.toCommand(new ModAction(new ClimbAction(false, DoubleSolenoid.Value.kForward), new ClimbAction(false, DoubleSolenoid.Value.kReverse))));
         */
         gyroLock.whileHeld(Action.toCommand(new GyroLock()));
-        lock.toggleWhenPressed(Action.toCommand(new Lock()));
-        Pistons.toggleWhenPressed(Action.toCommand(new climb()));
-        Pistons.whileHeld(Action.toCommand(new Elevator(-1)));
-        ElevatorUp.whileHeld(Action.toCommand(new Elevator(1)));
-        ElevatorDown.whileHeld(Action.toCommand(new Elevator(-1)));
-        crawlerForward.whileHeld(Action.toCommand(new Crawl(0.5)));
-        crawlerBackward.whileHeld(Action.toCommand(new Crawl(-0.5)));
-        //Arm Poses
-        //Cargo Manipulator
-        cargoRollout.whileHeld(Action.toCommand(new ManipulatorAction(ManipulatorAction.ShotPower.SlowShoot)));
-        cargoShoot.whileHeld(Action.toCommand(new ManipulatorAction(ManipulatorAction.ShotPower.Shoot)));
-        intake.whileHeld(Action.toCommand(new ManipulatorAction(ManipulatorAction.ShotPower.PickUp)));
-
-        //Stow/Unstow
-        unstow.whenPressed(Action.toCommand(new UnstowArmAction()));
-        stow.whileHeld(Action.toCommand(new StowArmAction()));
-
     }
 }

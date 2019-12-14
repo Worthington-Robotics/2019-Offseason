@@ -87,25 +87,25 @@ public class AutoSelector {
         switch (usrAuto) {
 
             case Auto1:
-                return new CargoShipLeft(false);
+                return null;
 
             case Auto2:
-                return new CargoShipRight(false);
+                return null;
 
             case Auto3:
-                return new CargoShipLeft(true);
+                return null;
 
             case Auto4:
-                return new CargoShipRight(true);
+                return null;
 
             case Auto5:
-                return new CargoShipLeftAbv(false);
+                return null;
 
             case Auto6:
-                return new CargoShipRightAbv(false);
+                return null;
 
             case Auto7:
-                return new AutoTestProtocol();
+                return null;
 
 
             default:
