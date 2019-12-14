@@ -48,8 +48,8 @@ public class Pose2d implements IPose2d<Pose2d> {
     }
 
     /**
-     * Obtain a new Pose2d from a (constant curvature) velocity. See:
-     * https://github.com/strasdat/Sophus/blob/master/sophus/se2.hpp
+     * Obtain a new Pose2d from a (constant curvature) velocity.
+     * @see https://github.com/strasdat/Sophus/blob/master/sophus/se2.hpp
      */
     public static Pose2d exp(final Twist2d delta) {
         double sin_theta = Math.sin(delta.dtheta);
