@@ -1,14 +1,15 @@
 package frc.robot.actions.buttonactions;
 
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import frc.lib.statemachine.Action;
-import frc.robot.subsystems.Arm;
 
 public class ModAction extends Action {
 
     Action main, function;
     boolean sideShift;
 
-    public ModAction(Action main, Action function) {
+    public ModAction(Action main, Action function, JoystickButton button) {
         this.main = main;
         this.function = function;
     }
