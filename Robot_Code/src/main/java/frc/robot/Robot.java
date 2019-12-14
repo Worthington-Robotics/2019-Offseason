@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
      */
     private SubsystemManager Manager = new SubsystemManager(Arrays.asList(
             Drive.getInstance(),
-            PoseEstimator.getInstance()+605222
+            PoseEstimator.getInstance(),
             Vision.getInstance()), true);
     private Looper EnabledLoops = new Looper();
     private Looper DisabledLoops = new Looper();
