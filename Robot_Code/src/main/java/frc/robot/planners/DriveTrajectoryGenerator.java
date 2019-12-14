@@ -45,6 +45,16 @@ public class DriveTrajectoryGenerator {
         return m_instance;
     }
 
+    /**
+     * This method 
+     * @param reversed Is it reversed?
+     * @param waypoints Points list in List<Pose2d>
+     * @param constraints Any constraints besides max velocity, max acceleration, and max voltage in Arrays form 
+     * @param max_vel Max motor velocity
+     * @param max_accel Max motor acceleration
+     * @param max_voltage Max motor voltage
+     * @return
+     */
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
             boolean reversed,
             final List<Pose2d> waypoints,
@@ -55,6 +65,10 @@ public class DriveTrajectoryGenerator {
         return DMP.generateTrajectory(reversed, waypoints, constraints, 0.0, 0.0, max_vel, max_accel, max_voltage);
     }
 
+    /**
+     * Basic Test Trajectory that moves 10 ft
+     * @return A trajectory with the points inside it for testing
+     */
     public Trajectory<TimedState<Pose2dWithCurvature>> getTenFeet() {
         List<Pose2d> Points = new ArrayList<>();
         Points.add(new Pose2d(0, 0, Rotation2d.identity()));
@@ -62,6 +76,10 @@ public class DriveTrajectoryGenerator {
         return generateTrajectory(false, Points, Arrays.asList(new CentripetalAccelerationConstraint(60)), 36.0, 60, 10.0);
     }
 
+    /**
+     * Basic Test Trajectory that moves 10 in
+     * @return A trajectory with the points inside it for testing
+     */
     public Trajectory<TimedState<Pose2dWithCurvature>> getTenInch() {
         List<Pose2d> Points = new ArrayList<>();
         Points.add(new Pose2d(0, 0, Rotation2d.identity()));
