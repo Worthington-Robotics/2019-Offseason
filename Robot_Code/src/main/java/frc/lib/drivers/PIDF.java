@@ -187,6 +187,10 @@ public class PIDF {
         }
     }
 
+    public boolean onTarget(double epsilon){
+        return Util.epsilonEquals(error, 0, epsilon);
+    }
+
     private static double clamp(double value, double low, double high) {
         return Math.max(low, Math.min(value, high));
     }
