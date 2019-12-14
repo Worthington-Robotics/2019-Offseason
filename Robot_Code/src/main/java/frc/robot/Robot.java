@@ -37,9 +37,7 @@ public class Robot extends TimedRobot {
             PoseEstimator.getInstance(),
             Manipulator.getInstance(),
             Arm.getInstance(),
-            Vision.getInstance(),
-            Logger.getInstance()
-    ));
+            Vision.getInstance()), true);
     private Looper EnabledLoops = new Looper();
     private Looper DisabledLoops = new Looper();
     private OI Oi = new OI();
@@ -47,8 +45,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         Arm.getInstance().setIgnoreSafety(false);
-        VersionData.doVersionID();
-        Logger.getInstance().addNumberKeys(Constants.NUMBER_KEYS);
+        VersionData.WriteBuildInfoToDashboard();
         Manager.registerEnabledLoops(EnabledLoops);
         Manager.registerDisabledLoops(DisabledLoops);
         //Arm.getInstance().reset();
