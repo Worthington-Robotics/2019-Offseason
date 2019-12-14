@@ -31,11 +31,16 @@ public class Drive extends Subsystem {
         return m_DriveInstance;
     }
 
+    public PeriodicIO getLogger()
+    {
+        return periodic;
+    }
+
     //used internally for data
     private DriveControlState mDriveControlState = DriveControlState.OPEN_LOOP;
     private DriveMotionPlanner mMotionPlanner;
     private boolean mOverrideTrajectory = false;
-    private PeriodicIO periodic;
+    private DriveIO periodic;
     private double[] operatorInput = {0, 0, 0}; //last input set from joystick update
     private PigeonIMU pigeonIMU;
     private DoubleSolenoid trans;
@@ -219,7 +224,7 @@ public class Drive extends Subsystem {
         mMotionPlanner.reset();
         //pigeonIMU.enterCalibrationMode(PigeonIMU.CalibrationMode.Temperature);
         mMotionPlanner.setFollowerType(DriveMotionPlanner.FollowerType.NONLINEAR_FEEDBACK);
-        periodic = new PeriodicIO();
+        periodic = new DriveIO();
         setHeading(Rotation2d.fromDegrees(0));
         resetEncoders();
 
@@ -441,7 +446,7 @@ public class Drive extends Subsystem {
         }
     }
 
-    public static class PeriodicIO {
+    public class DriveIO extends PeriodicIO {
         // INPUTS
         int left_pos_ticks;
         int right_pos_ticks;

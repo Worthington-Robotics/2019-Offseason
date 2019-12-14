@@ -8,7 +8,6 @@ import frc.robot.actions.armactions.*;
 import frc.robot.actions.driveactions.AnglePID;
 import frc.robot.actions.driveactions.GyroLock;
 import frc.robot.autoactiongroups.StowProtocol;
-import frc.robot.subsystems.Arm;
 
 public class OI {
 
@@ -65,7 +64,6 @@ public class OI {
         backClimb.whenPressed(Action.toCommand(new ModAction(new ClimbAction(false, DoubleSolenoid.Value.kForward), new ClimbAction(false, DoubleSolenoid.Value.kReverse))));
         */
         gyroLock.whileHeld(Action.toCommand(new GyroLock()));
-        highCargo.whenPressed(Action.toCommand(new PistonArmAction(Arm.PistonArmStates.FWD_HIGH_CARGO)));
         lock.toggleWhenPressed(Action.toCommand(new Lock()));
         Pistons.toggleWhenPressed(Action.toCommand(new climb()));
         Pistons.whileHeld(Action.toCommand(new Elevator(-1)));
@@ -74,10 +72,6 @@ public class OI {
         crawlerForward.whileHeld(Action.toCommand(new Crawl(0.5)));
         crawlerBackward.whileHeld(Action.toCommand(new Crawl(-0.5)));
         //Arm Poses
-        cargoShip.whenPressed(Action.toCommand(new PistonArmAction(Arm.PistonArmStates.CARGO_SHIP_CARGO)));
-        groundCargo.whenPressed(Action.toCommand(new PistonArmAction(Arm.PistonArmStates.FWD_GROUND_CARGO)));
-        botCargo.whenPressed(Action.toCommand(new PistonArmAction(Arm.PistonArmStates.FWD_LOW_CARGO)));
-        midCargo.whenPressed(Action.toCommand(new PistonArmAction(Arm.PistonArmStates.FWD_MEDIUM_CARGO)));
         //Cargo Manipulator
         cargoRollout.whileHeld(Action.toCommand(new ManipulatorAction(ManipulatorAction.ShotPower.SlowShoot)));
         cargoShoot.whileHeld(Action.toCommand(new ManipulatorAction(ManipulatorAction.ShotPower.Shoot)));

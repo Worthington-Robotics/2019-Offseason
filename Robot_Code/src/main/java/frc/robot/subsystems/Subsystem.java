@@ -28,7 +28,10 @@ public abstract class Subsystem {
     /**
      * Called to stop the autonomous functions of the subsystem and place it in open loop
      */
-    public abstract void onStop();
+    public void onStop()
+    {
+        
+    }
 
     /**
      * Required for the subsystem's looper to be registered to the state machine
