@@ -16,30 +16,14 @@ public class Constants {
     public static final int DRIVE_FRONT_RIGHT_ID = 1;
     public static final int DRIVE_MIDDLE_RIGHT_ID = 2;
     public static final int DRIVE_BACK_RIGHT_ID = 3;
-    //public static final int ARM_PRONOMINAL = 7;
-    public static final int ARM_DISTAL = 8;
 
     //Spark Ports
-    public static final int BOTTOM_CARGOMANIP_ID = 1;
-    public static final int TOP_CARGOMANIP_ID = 2;
-    public static final int CLIMBER_CRAWL_ID = 3;
-    public static final int CLIMBER_ELEVATOR_ID = 4;
 
     //Solenoid Ports
     public static final int TRANS_LOW_ID = 0;
     public static final int TRANS_HIGH_ID = 1;
-    public static final int CLIMB_FRONT_LOW_ID = 2;
-    public static final int CLIMB_FRONT_HIGH_ID = 3;
-    public static final int LOCK_LOW_ID = 4;
-    public static final int LOCK_HIGH_ID = 5;
-    public static final int PROX_LOW = 6;
-    public static final int PROX_HIGH = 7;
 
     //Sensor Ports
-    //public static final int ULTRASONIC_IN_1 = 0;
-    //public static final int ULTRASONIC_OUT_1 = 1;
-    //public static final int ULTRASONIC_IN_2 = 2;
-    //public static final int ULTRASONIC_OUT_2 = 3;
 
     /**
      * Drivetrain tuned values --------------------------------
@@ -85,39 +69,7 @@ public class Constants {
     public static final double DRIVE_LEFT_KF = 0.53;
 
 
-    /**
-     * Arm tuned values -----------------------------------------
-     */
-
-    // Arm Absolute Zeros
-    //TODO CHECK TWICE BONEHEAD!!!!!!!
-    public static double DIST_ABSOLUTE_ZERO = 2262;//8293
-
-    //Arm Physical Constants
-    public static final double PROX_LENGTH = 0.6096; // m
-    public static final double DIST_LENGTH = 0.4572; // m
-    public static final double PROX_MOI = 0.1;
-    public static final double DIST_MOI = 0.01;
-
-    //Electrical Constants
-    public static final double PROX_Kv = 0.1; // V per rad/s
-    public static final double PROX_Kt = 0.5; // V per rad/s^2 //not currently correct usage
-    public static final double PROX_V_INTERCEPT = 0.1; // V
-
-    public static final double DIST_Kv = 0.1; // V per rad/s
-    public static final double DIST_Kt = 0.5; // V per rad/s^2 //not currently correct usage
-    public static final double DIST_V_INTERCEPT = 0.1; // V
-
-    public static final double ARM_DIST_KP = 3.5;//7.5
-    public static final double ARM_DIST_KI = 0;
-    public static final double ARM_DIST_KD = 0;//75
-    public static final double ARM_DIST_KF = 0;
-    //public static final double ARM_DIST_A_FEEDFORWARD = 0; //.16
-    public static final double ARM_U_U_LIMIT = 750;
-    public static final double ARM_U_L_LIMIT = -1500;
-    public static final double ARM_L_U_LIMIT = 650;
-    public static final double ARM_L_L_LIMIT = -350;
-    public static final double ARM_NO_DOWN_LIMIT = -500;
+    
     /**
      * General Configuration --------------------------------------
      */

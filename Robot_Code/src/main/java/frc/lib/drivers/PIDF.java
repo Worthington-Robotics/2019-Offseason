@@ -13,6 +13,10 @@ public class PIDF {
 
     protected static final double DEFAULT_DT = 0.010;
 
+    public PIDF(double kP, double kD){
+        this(kP, 0, kD, 0, DEFAULT_DT, 0);
+    }
+
     public PIDF(double kP, double kI, double kD, double iMax){
         this(kP, kI, kD, 0, DEFAULT_DT, iMax);
     }
