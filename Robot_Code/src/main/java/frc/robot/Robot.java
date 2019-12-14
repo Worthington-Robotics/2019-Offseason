@@ -42,7 +42,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
-        Arm.getInstance().setIgnoreSafety(false);
         VersionData.WriteBuildInfoToDashboard();
         Manager.registerEnabledLoops(EnabledLoops);
         Manager.registerDisabledLoops(DisabledLoops);
@@ -59,12 +58,9 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         // publishes the auto list to the dashboard "Auto Selector"
-        Arm.getInstance().safeMode();
-        Arm.getInstance().setIgnoreSafety(false);
         SmartDashboard.putStringArray("Auto List", AutoSelector.buildArray());
         StateMachine.assertStop();
         Drive.getInstance().overrideTrajectory(true);
-        Manipulator.getInstance().reset();
         //Stop the disabled looper
         DisabledLoops.stop();
         //Start the enabled looper
@@ -78,8 +74,6 @@ public class Robot extends TimedRobot {
         //Reset all important subsystems
         PoseEstimator.getInstance().reset();
         Drive.getInstance().reset();
-        Arm.getInstance().reset();
-        Arm.getInstance().setIgnoreSafety(true);
 
         //Start the enabled looper
         EnabledLoops.start();
@@ -130,7 +124,6 @@ public class Robot extends TimedRobot {
         //May want to remove these given that the robot was likely already running. may cause issues on field mode switch
         PoseEstimator.getInstance().reset();
         Drive.getInstance().reset();
-        Arm.getInstance().reset();
 
         //Start the enabled looper
         EnabledLoops.start();
