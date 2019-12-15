@@ -12,6 +12,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.drivers.PIDF;
 import frc.lib.geometry.Pose2d;
@@ -127,21 +128,19 @@ public class Drive extends Subsystem {
     public synchronized void writePeriodicOutputs() {
         if (mDriveControlState == DriveControlState.OPEN_LOOP || mDriveControlState == DriveControlState.ANGLE_PID
                 || (mDriveControlState == DriveControlState.PROFILING_TEST && Constants.RAMPUP)) {
+            // sets robot to desired gear
+            trans.set(periodic.TransState);
             driveFrontLeft.set(ControlMode.PercentOutput, periodic.left_demand);
             driveFrontRight.set(ControlMode.PercentOutput, periodic.right_demand);
             driveBackRight.set(ControlMode.Follower, driveFrontRight.getDeviceID());
         } else {
+            // sets robot to low gear
+            trans.set(Value.kReverse);
             driveFrontLeft.set(ControlMode.Velocity, -periodic.left_demand, DemandType.ArbitraryFeedForward,
                     -(periodic.left_feedforward + Constants.DRIVE_LEFT_KD * periodic.left_accl / 1023.0));
             driveFrontRight.set(ControlMode.Velocity, -periodic.right_demand, DemandType.ArbitraryFeedForward,
                     -(periodic.right_feedforward + Constants.DRIVE_RIGHT_KD * periodic.right_accl / 1023.0));
             driveBackRight.set(ControlMode.Follower, driveFrontRight.getDeviceID());
-        }
-        // gearShift();
-        if (periodic.B1) {
-            trans.set(DoubleSolenoid.Value.kReverse);
-        } else {
-            trans.set(DoubleSolenoid.Value.kForward);
         }
     }
 
@@ -159,6 +158,10 @@ public class Drive extends Subsystem {
         configTalons();
         reset();
 
+    }
+
+    public void setTrans(DoubleSolenoid.Value state) {
+        periodic.TransState = state;
     }
 
     public synchronized Rotation2d getHeading() {
@@ -223,11 +226,14 @@ public class Drive extends Subsystem {
     }
 
     private void configTalons() {
-        ErrorCode sensorPresent = driveFrontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
+        ErrorCode sensorPresent = driveFrontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,
+                0, 100); // primary closed-loop, 100 ms timeout
         if (sensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + sensorPresent, false);
         }
-        driveFrontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100); //DO NOT FORGET THIS use 5ms packet time on feedback
+        driveFrontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100); // DO NOT FORGET THIS use
+                                                                                             // 5ms packet time on
+                                                                                             // feedback
         driveFrontLeft.setSensorPhase(true);
         driveFrontLeft.selectProfileSlot(0, 0);
         driveFrontLeft.config_kF(0, Constants.DRIVE_LEFT_KF, 0);
@@ -252,11 +258,17 @@ public class Drive extends Subsystem {
         driveBackLeft.enableVoltageCompensation(true);
         driveBackLeft.follow(driveFrontLeft);
 
-        sensorPresent = driveFrontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
+        sensorPresent = driveFrontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); // primary
+                                                                                                                       // closed-loop,
+                                                                                                                       // 100
+                                                                                                                       // ms
+                                                                                                                       // timeout
         if (sensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect right encoder: " + sensorPresent, false);
         }
-        driveFrontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100); //DO NOT FORGET THIS use 5ms packet time on feedback
+        driveFrontLeft.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100); // DO NOT FORGET THIS use
+                                                                                             // 5ms packet time on
+                                                                                             // feedback
         driveFrontRight.setSensorPhase(true);
         driveFrontRight.selectProfileSlot(0, 0);
         driveFrontRight.config_kF(0, Constants.DRIVE_RIGHT_KF, 0);
@@ -280,8 +292,6 @@ public class Drive extends Subsystem {
         driveBackRight.configVoltageCompSaturation(Constants.DRIVE_VCOMP);
         driveBackRight.enableVoltageCompensation(true);
         driveBackRight.follow(driveFrontRight);
-
-        
 
     }
 
@@ -362,8 +372,7 @@ public class Drive extends Subsystem {
         periodic.right_demand = signal.getRight();
     }
 
-    public boolean getPIDOnTarget()
-    {
+    public boolean getPIDOnTarget() {
         return anglePID.onTarget(Constants.ANGLE_PID_EPISLON);
     }
 
@@ -455,7 +464,8 @@ public class Drive extends Subsystem {
         double right_error = 0;
         double left_error = 0;
         double gyro_pid_angle = 0;
-        double[] operatorInput = {0, 0, 0};
+        double[] operatorInput = { 0, 0, 0 };
+        DoubleSolenoid.Value TransState = Value.kReverse;
 
         // OUTPUTS
         double ramp_Up_Counter = 0;
